@@ -1,0 +1,50 @@
+name: CI/CD
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Grant execute permission for Gradle
+        run: chmod +x ./gradlew
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Build jar
+        if: github.event_name == 'push'
+        run: ./gradlew bootJar
+
+      - name: Deploy to EC2
+        if: github.event_name == 'push'
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/ec2.pem
+          chmod 600 ~/.ssh/ec2.pem
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/ec2.pem "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}" "mkdir -p /home/${{ secrets.EC2_USERNAME }}/app"
+          scp -i ~/.ssh/ec2.pem build/libs/*.jar "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/app.jar"
+          scp -i ~/.ssh/ec2.pem scripts/deploy.sh "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/deploy.sh"
+          ssh -i ~/.ssh/ec2.pem "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}" "chmod +x /home/${{ secrets.EC2_USERNAME }}/app/deploy.sh && /home/${{ secrets.EC2_USERNAME }}/app/deploy.sh"
