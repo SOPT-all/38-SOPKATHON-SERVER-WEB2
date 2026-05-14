@@ -1,3 +1,9 @@
 spring:
-  application:
-    name: sopkathon-web2-server
+  datasource:
+    url: jdbc:mysql://sopkathon-web2-rds.c5my4geuwqnk.ap-northeast-2.rds.amazonaws.com:3306/assignment
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
