@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://sopkathon-web2-rds.c5my4geuwqnk.ap-northeast-2.rds.amazonaws.com:3306/assignment
+    url: jdbc:mysql://sopkathon-web2-rds.c5my4geuwqnk.ap-northeast-2.rds.amazonaws.com:3306/sopkathon_web2
     username: ${RDS_USERNAME}
     password: ${RDS_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
