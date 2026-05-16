@@ -53,7 +53,7 @@ class AnswerServiceTest {
     private EntityManager entityManager;
 
     @Test
-    void createAnswerSavesImageKeyForParticipantRoomQuestion() {
+    void createAnswerSavesVideoKeyForParticipantRoomQuestion() {
         Room room = roomRepository.save(new Room("invite-token-hash"));
         room.updateCurrentStreakDay(6);
         Participant participant = participantRepository.save(new Participant(
@@ -69,19 +69,21 @@ class AnswerServiceTest {
         ));
 
         CreateAnswerResponse response = answerService.createAnswer(
-                new CreateAnswerRequest(roomQuestion.getId(), "uploads/answer.jpg"),
+                new CreateAnswerRequest(roomQuestion.getId(), "uploads/answer.mp4"),
                 "Bearer valid-browser-token"
         );
 
         assertThat(response.answerId()).isNotNull();
         assertThat(response.roomQuestionId()).isEqualTo(roomQuestion.getId());
-        assertThat(response.imageKey()).isEqualTo("uploads/answer.jpg");
+        assertThat(response.videoKey()).isEqualTo("uploads/answer.mp4");
         assertThat(response.isUnlocked()).isFalse();
         assertThat(response.currentStreakDay()).isEqualTo(6);
         assertThat(response.currentStreakMessage()).isEqualTo("드디어 맞닿았어요!");
         assertThat(response.createdAt()).isNotNull();
         assertThat(answerRepository.findById(response.answerId()).orElseThrow().getParticipant().getId())
                 .isEqualTo(participant.getId());
+        assertThat(answerRepository.findById(response.answerId()).orElseThrow().getVideoKey())
+                .isEqualTo("uploads/answer.mp4");
     }
 
     @ParameterizedTest
@@ -107,7 +109,7 @@ class AnswerServiceTest {
         ));
 
         CreateAnswerResponse response = answerService.createAnswer(
-                new CreateAnswerRequest(roomQuestion.getId(), "uploads/answer-" + currentStreakDay + ".jpg"),
+                new CreateAnswerRequest(roomQuestion.getId(), "uploads/answer-" + currentStreakDay + ".mp4"),
                 "Bearer browser-token-" + currentStreakDay
         );
 
@@ -135,12 +137,12 @@ class AnswerServiceTest {
                 1
         ));
         answerService.createAnswer(
-                new CreateAnswerRequest(roomQuestion.getId(), "uploads/first.jpg"),
+                new CreateAnswerRequest(roomQuestion.getId(), "uploads/first.mp4"),
                 "Bearer first-browser-token"
         );
 
         CreateAnswerResponse response = answerService.createAnswer(
-                new CreateAnswerRequest(roomQuestion.getId(), "uploads/second.jpg"),
+                new CreateAnswerRequest(roomQuestion.getId(), "uploads/second.mp4"),
                 "Bearer second-browser-token"
         );
 
@@ -155,7 +157,7 @@ class AnswerServiceTest {
 
     @Test
     void createAnswerRejectsInvalidBrowserToken() {
-        CreateAnswerRequest request = new CreateAnswerRequest(1L, "uploads/answer.jpg");
+        CreateAnswerRequest request = new CreateAnswerRequest(1L, "uploads/answer.mp4");
 
         assertThatThrownBy(() -> answerService.createAnswer(request, "Bearer unknown-browser-token"))
                 .isInstanceOf(CustomException.class)
@@ -222,12 +224,12 @@ class AnswerServiceTest {
                 1
         ));
         answerService.createAnswer(
-                new CreateAnswerRequest(roomQuestion.getId(), "uploads/first.jpg"),
+                new CreateAnswerRequest(roomQuestion.getId(), "uploads/first.mp4"),
                 "Bearer valid-browser-token"
         );
 
         assertThatThrownBy(() -> answerService.createAnswer(
-                new CreateAnswerRequest(roomQuestion.getId(), "uploads/second.jpg"),
+                new CreateAnswerRequest(roomQuestion.getId(), "uploads/second.mp4"),
                 "Bearer valid-browser-token"
         ))
                 .isInstanceOf(CustomException.class)

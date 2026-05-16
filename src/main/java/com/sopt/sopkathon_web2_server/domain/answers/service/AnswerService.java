@@ -51,7 +51,7 @@ public class AnswerService {
             throw new CustomException(ErrorCode.ANSWER_ALREADY_EXISTS);
         }
 
-        Answer answer = answerRepository.save(new Answer(roomQuestion, participant, request.imageKey()));
+        Answer answer = answerRepository.save(new Answer(roomQuestion, participant, request.videoKey()));
         boolean isUnlocked = answerRepository.countByRoomQuestionId(roomQuestion.getId()) >= REQUIRED_ANSWER_COUNT;
 
         if (isUnlocked && roomQuestion.getCompletedAt() == null) {
@@ -63,7 +63,7 @@ public class AnswerService {
         return new CreateAnswerResponse(
                 answer.getId(),
                 roomQuestion.getId(),
-                answer.getImageKey(),
+                answer.getVideoKey(),
                 isUnlocked,
                 roomQuestion.getRoom().getCurrentStreakDay(),
                 createCurrentStreakMessage(roomQuestion.getRoom().getCurrentStreakDay()),

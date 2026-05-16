@@ -66,14 +66,14 @@ class AnswerControllerTest {
                         .content("""
                                 {
                                   "roomQuestionId": %d,
-                                  "imageKey": "uploads/answer.jpg"
+                                  "videoKey": "uploads/answer.mp4"
                                 }
                                 """.formatted(roomQuestion.getId())))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.answerId").isNumber())
                 .andExpect(jsonPath("$.data.roomQuestionId").value(roomQuestion.getId()))
-                .andExpect(jsonPath("$.data.imageKey").value("uploads/answer.jpg"))
+                .andExpect(jsonPath("$.data.videoKey").value("uploads/answer.mp4"))
                 .andExpect(jsonPath("$.data.isUnlocked").value(false))
                 .andExpect(jsonPath("$.data.currentStreakDay").value(6))
                 .andExpect(jsonPath("$.data.currentStreakMessage").value("드디어 맞닿았어요!"))
@@ -88,7 +88,7 @@ class AnswerControllerTest {
                         .content("""
                                 {
                                   "roomQuestionId": 1,
-                                  "imageKey": "uploads/answer.jpg"
+                                  "videoKey": "uploads/answer.mp4"
                                 }
                                 """))
                 .andExpect(status().isBadRequest())

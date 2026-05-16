@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public record CreateAnswerResponse(
         Long answerId,
         Long roomQuestionId,
-        String imageKey,
+        String videoKey,
         @JsonProperty("isUnlocked")
         Boolean isUnlocked,
         Integer currentStreakDay,
