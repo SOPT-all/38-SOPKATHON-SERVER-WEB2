@@ -33,6 +33,11 @@ public class Participant extends BaseEntity {
     @Column(name = "browser_token_hash", nullable = false, unique = true)
     private String browserTokenHash;
 
+    // 참여자 역할
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private ParticipantRole role;
+
     // 참여 시간
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
@@ -45,12 +50,19 @@ public class Participant extends BaseEntity {
     public Participant(
             Room room,
             Integer participantOrder,
-            String browserTokenHash
+            String browserTokenHash,
+            ParticipantRole role
     ) {
         this.room = room;
         this.participantOrder = participantOrder;
         this.browserTokenHash = browserTokenHash;
+        this.role = role;
         this.joinedAt = LocalDateTime.now();
+    }
+
+    // 참여자 역할 변경
+    public void updateRole(ParticipantRole role) {
+        this.role = role;
     }
 
     // 마지막으로 본 시간 업데이트
