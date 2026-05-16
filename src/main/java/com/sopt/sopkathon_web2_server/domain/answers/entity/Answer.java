@@ -2,6 +2,7 @@ package com.sopt.sopkathon_web2_server.domain.answers.entity;
 
 import com.sopt.sopkathon_web2_server.domain.participants.entity.Participant;
 import com.sopt.sopkathon_web2_server.domain.question.entity.RoomQuestion;
+import com.sopt.sopkathon_web2_server.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,9 +10,17 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "answers")
+@Table(
+        name = "answers",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_answer_room_question_participant",
+                        columnNames = {"room_question_id", "participant_id"}
+                )
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Answer {
+public class Answer extends BaseEntity {
 
     // ID
     @Id

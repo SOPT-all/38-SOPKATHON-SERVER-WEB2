@@ -1,6 +1,7 @@
 package com.sopt.sopkathon_web2_server.domain.question.entity;
 
 import com.sopt.sopkathon_web2_server.domain.rooms.entity.Room;
+import com.sopt.sopkathon_web2_server.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -10,9 +11,17 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "room_questions")
+@Table(
+        name = "room_questions",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_room_question_room_question",
+                        columnNames = {"room_id", "question_id"}
+                )
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RoomQuestion {
+public class RoomQuestion extends BaseEntity {
 
     // ID
     @Id
@@ -34,7 +43,7 @@ public class RoomQuestion {
     private Integer questionOrder;
 
     // 질문이 열린 시간
-    @Column(name = "opened_at")
+    @Column(name = "opened_at", nullable = false)
     private LocalDateTime openedAt;
 
     // 양쪽 모두 완료된 시간

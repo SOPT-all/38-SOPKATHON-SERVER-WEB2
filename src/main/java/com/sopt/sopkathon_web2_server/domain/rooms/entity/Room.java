@@ -25,7 +25,7 @@ public class Room extends BaseEntity {
 
     // 현재 연속 기록 일수
     @Column(name = "current_streak_day", nullable = false)
-    private Integer currentStreakDay = 0;
+    private Integer currentStreakDay = 1;
 
     // 양쪽 모두 답변 완료된 시간
     @Column(name = "last_completed_at")
@@ -38,7 +38,7 @@ public class Room extends BaseEntity {
     // 생성자
     public Room(String inviteTokenHash) {
         this.inviteTokenHash = inviteTokenHash;
-        this.currentStreakDay = 0;
+        this.currentStreakDay = 1;
     }
 
     // 마지막 답변 완료 시간 변경
