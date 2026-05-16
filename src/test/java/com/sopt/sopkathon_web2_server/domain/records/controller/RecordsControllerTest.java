@@ -79,6 +79,70 @@ class RecordsControllerTest {
                 .andExpect(jsonPath("$.error.message").value("방 참여자 정보가 올바르지 않습니다."));
     }
 
+    @Test
+    void getRecordDetailReturnsQuestionAndAnswerVideos() throws Exception {
+        RoomParticipants roomParticipants = createRoomParticipants();
+        RoomQuestion roomQuestion = saveCompletedRoomQuestion(
+                roomParticipants.room(),
+                1,
+                "어릴 때 꿈이 뭐였어?",
+                LocalDateTime.of(2026, 5, 17, 20, 24, 0)
+        );
+        answerRepository.save(new Answer(roomQuestion, roomParticipants.creator(), "uploads/child-answer.mp4"));
+        answerRepository.save(new Answer(roomQuestion, roomParticipants.guest(), "uploads/parent-answer.mp4"));
+
+        mockMvc.perform(get("/api/records/{roomQuestionId}", roomQuestion.getId())
+                        .header("Authorization", "Bearer " + roomParticipants.creatorToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.roomQuestionId").value(roomQuestion.getId()))
+                .andExpect(jsonPath("$.data.question").value("어릴 때 꿈이 뭐였어?"))
+                .andExpect(jsonPath("$.data.completedAt").value("2026-05-17T20:24:00"))
+                .andExpect(jsonPath("$.data.answers.length()").value(2))
+                .andExpect(jsonPath("$.data.answers[0].role").value("PARENT"))
+                .andExpect(jsonPath("$.data.answers[0].videoUrl").value("https://test-bucket.s3.ap-northeast-2.amazonaws.com/uploads/parent-answer.mp4"))
+                .andExpect(jsonPath("$.data.answers[0].answeredAt").exists())
+                .andExpect(jsonPath("$.data.answers[0].isMine").value(false))
+                .andExpect(jsonPath("$.data.answers[1].role").value("CHILD"))
+                .andExpect(jsonPath("$.data.answers[1].videoUrl").value("https://test-bucket.s3.ap-northeast-2.amazonaws.com/uploads/child-answer.mp4"))
+                .andExpect(jsonPath("$.data.answers[1].answeredAt").exists())
+                .andExpect(jsonPath("$.data.answers[1].isMine").value(true))
+                .andExpect(jsonPath("$.error").doesNotExist());
+    }
+
+    @Test
+    void getRecordDetailReturnsNotFoundWhenRecordDoesNotExist() throws Exception {
+        RoomParticipants roomParticipants = createRoomParticipants();
+
+        mockMvc.perform(get("/api/records/{roomQuestionId}", 999999L)
+                        .header("Authorization", "Bearer " + roomParticipants.creatorToken()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data").doesNotExist())
+                .andExpect(jsonPath("$.error.code").value(40402))
+                .andExpect(jsonPath("$.error.message").value("기록을 찾을 수 없습니다"));
+    }
+
+    @Test
+    void getRecordDetailReturnsNotFoundWhenBothParticipantsHaveNotAnswered() throws Exception {
+        RoomParticipants roomParticipants = createRoomParticipants();
+        RoomQuestion roomQuestion = saveCompletedRoomQuestion(
+                roomParticipants.room(),
+                1,
+                "어릴 때 꿈이 뭐였어?",
+                LocalDateTime.of(2026, 5, 17, 20, 24, 0)
+        );
+        answerRepository.save(new Answer(roomQuestion, roomParticipants.creator(), "uploads/child-answer.mp4"));
+
+        mockMvc.perform(get("/api/records/{roomQuestionId}", roomQuestion.getId())
+                        .header("Authorization", "Bearer " + roomParticipants.creatorToken()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data").doesNotExist())
+                .andExpect(jsonPath("$.error.code").value(40402))
+                .andExpect(jsonPath("$.error.message").value("기록을 찾을 수 없습니다"));
+    }
+
     private RoomParticipants createRoomParticipants() {
         CreateRoomResponse createdRoom = roomService.createRoom();
         JoinRoomResponse joinedRoom = roomService.joinRoom(createdRoom.inviteToken());
