@@ -48,3 +48,26 @@
 - 상세 조회 구현 후 같은 컨트롤러 테스트 명령이 통과했다.
 - 기록 도메인 관련 테스트 `./gradlew test --tests '*Records*'`가 통과했다.
 - 전체 테스트 `./gradlew test`가 통과했다.
+
+# 부모님 답변 상태 메시지 컨텍스트 노트
+
+- 요청 의도는 홈 응답에서 부모님이 오늘 질문에 답변했는지에 따라 안내 문구를 다르게 내려주는 것이다.
+- 기존 홈 응답에는 `statusMessage` 문자열이 이미 있으므로 새 응답 필드를 추가하지 않고 이 값을 부모님 답변 여부에 따라 반환하는 방식으로 진행한다.
+- 부모님 답변 여부는 현재 사용자의 답변 여부가 아니라 `ParticipantRole.PARENT` 역할 참여자의 답변 존재 여부로 판단한다.
+- 부모님이 아직 입장하지 않았거나 답변이 없으면 부모님 답변이 없는 상태로 본다.
+- 성공 기준은 미답변일 때 `부모님 답변은 아직이에요`, 답변 완료일 때 `부모님을 답변을 남겼어요`가 반환되고 관련 홈 테스트와 전체 테스트가 통과하는 것이다.
+- 서비스와 컨트롤러 테스트를 먼저 변경했고 `./gradlew test --tests '*Home*'`에서 기존 정적 `statusMessage`가 반환되어 4개 테스트가 실패하는 것을 확인했다.
+- `AnswerRepository.existsByRoomQuestionIdAndParticipantRole`로 부모 역할 답변 존재 여부를 조회하고 `HomeService`가 상태 메시지를 선택하도록 구현했다.
+- 구현 후 `./gradlew test --tests '*Home*'`가 통과했다.
+- 전체 테스트 `./gradlew test`가 통과했다.
+
+# 부모님 답변 상태 메시지 분리 컨텍스트 노트
+
+- 사용자 피드백에 따라 부모님 답변 상태 문구와 단계별 진행도 문구는 별도 의미로 유지해야 한다.
+- 이전 구현은 부모님 답변 상태 문구를 `HomeResponse.statusMessage`에 넣어 기존 홈 상태 문구를 대체했으므로 응답 필드 역할을 섞은 것이다.
+- 수정 방향은 `statusMessage`를 기존 `답장을 받지 못해 멀어지는 중이에요..`로 복구하고, 부모님 답변 상태 문구는 새 `parentAnswerStatusMessage` 필드로 분리하는 것이다.
+- `progress.message`는 기존 step1부터 step4까지의 단계 문구만 담당한다.
+- 테스트를 먼저 `parentAnswerStatusMessage` 기대값으로 수정했고 새 record accessor가 없어 `./gradlew test --tests '*Home*'`가 `cannot find symbol`로 실패하는 것을 확인했다.
+- `HomeResponse`에 `parentAnswerStatusMessage`를 추가하고 `HomeService`에서 기존 `statusMessage`와 분리해 내려주도록 수정했다.
+- 수정 후 `./gradlew test --tests '*Home*'`가 통과했다.
+- 전체 테스트 `./gradlew test`가 통과했다.
