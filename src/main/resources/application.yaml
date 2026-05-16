@@ -7,3 +7,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+  web:
+    resources:
+      add-mappings: false # Disable static resource mapping (For NoHandlerFoundException)
+
+aws:
+  region: ap-northeast-2
+  s3:
+    bucket: ${S3_BUCKET_NAME}
