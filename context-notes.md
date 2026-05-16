@@ -34,3 +34,4 @@
 - 자동 병합으로 `ParticipantRepository.findByBrowserTokenHash`가 중복 선언되어 하나만 유지했다.
 - 충돌 표식 검색 `rg -n '<<<<<<<|=======|>>>>>>>' .` 결과는 비어 있었다.
 - `./gradlew test --tests '*Records*'`와 `./gradlew test`가 모두 통과했다.
+- 병합 해결 커밋 `1a32270`을 원격 `feat/24`에 푸시했다.
