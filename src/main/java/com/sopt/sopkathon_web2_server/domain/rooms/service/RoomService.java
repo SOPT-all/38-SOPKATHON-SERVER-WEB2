@@ -3,6 +3,9 @@ package com.sopt.sopkathon_web2_server.domain.rooms.service;
 import com.sopt.sopkathon_web2_server.domain.participants.entity.Participant;
 import com.sopt.sopkathon_web2_server.domain.participants.entity.ParticipantRole;
 import com.sopt.sopkathon_web2_server.domain.participants.repository.ParticipantRepository;
+import com.sopt.sopkathon_web2_server.domain.question.entity.RoomQuestion;
+import com.sopt.sopkathon_web2_server.domain.question.repository.QuestionRepository;
+import com.sopt.sopkathon_web2_server.domain.question.repository.RoomQuestionRepository;
 import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.CreateRoomResponse;
 import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.JoinRoomResponse;
 import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.ParticipantRoleResponse;
@@ -33,19 +36,26 @@ public class RoomService {
     private static final int CREATOR_ORDER = 1;
     private static final int GUEST_ORDER = 2;
     private static final int ROOM_PARTICIPANT_LIMIT = 2;
+    private static final int FIRST_QUESTION_ORDER = 1;
 
     private final RoomRepository roomRepository;
     private final ParticipantRepository participantRepository;
+    private final QuestionRepository questionRepository;
+    private final RoomQuestionRepository roomQuestionRepository;
     private final SecureRandom secureRandom;
     private final String inviteBaseUrl;
 
     public RoomService(
             RoomRepository roomRepository,
             ParticipantRepository participantRepository,
+            QuestionRepository questionRepository,
+            RoomQuestionRepository roomQuestionRepository,
             @Value("${client.invite-base-url}") String inviteBaseUrl
     ) {
         this.roomRepository = roomRepository;
         this.participantRepository = participantRepository;
+        this.questionRepository = questionRepository;
+        this.roomQuestionRepository = roomQuestionRepository;
         this.secureRandom = new SecureRandom();
         this.inviteBaseUrl = removeTrailingSlash(inviteBaseUrl);
     }
@@ -61,6 +71,7 @@ public class RoomService {
                 browserToken.hash(),
                 ParticipantRole.CHILD
         ));
+        assignFirstQuestion(room);
 
         return new CreateRoomResponse(
                 room.getId(),
@@ -70,6 +81,15 @@ public class RoomService {
                 participant.getRole(),
                 browserToken.value()
         );
+    }
+
+    private void assignFirstQuestion(Room room) {
+        questionRepository.findFirstByActiveTrueOrderBySequenceAsc()
+                .ifPresent(question -> roomQuestionRepository.save(new RoomQuestion(
+                        room,
+                        question,
+                        FIRST_QUESTION_ORDER
+                )));
     }
 
     @Transactional
