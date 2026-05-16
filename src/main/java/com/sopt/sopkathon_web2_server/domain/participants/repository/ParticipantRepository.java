@@ -12,6 +12,8 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     long countByRoomId(Long roomId);
 
+    Optional<Participant> findByBrowserTokenHash(String browserTokenHash);
+
     Optional<Participant> findByRoomIdAndBrowserTokenHash(Long roomId, String browserTokenHash);
 
     List<Participant> findAllByRoomIdOrderByParticipantOrderAsc(Long roomId);
