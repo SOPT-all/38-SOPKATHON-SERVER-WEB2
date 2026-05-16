@@ -7,6 +7,7 @@ import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.CreateRoomRespon
 import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.JoinRoomResponse;
 import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.ParticipantRoleResponse;
 import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.SwapRoomRolesResponse;
+import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.VerifyInviteResponse;
 import com.sopt.sopkathon_web2_server.domain.rooms.entity.Room;
 import com.sopt.sopkathon_web2_server.domain.rooms.repository.RoomRepository;
 import com.sopt.sopkathon_web2_server.global.exception.CustomException;
@@ -73,31 +74,32 @@ public class RoomService {
 
     @Transactional
     public JoinRoomResponse joinRoom(String inviteToken) {
-        if (!StringUtils.hasText(inviteToken)) {
-            throw new CustomException(ErrorCode.INVALID_INVITE_TOKEN);
-        }
-
-        String inviteTokenHash = hashToken(inviteToken);
-        Room room = roomRepository.findByInviteTokenHash(inviteTokenHash)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INVITE_TOKEN));
-
-        if (participantRepository.countByRoomId(room.getId()) >= ROOM_PARTICIPANT_LIMIT) {
-            throw new CustomException(ErrorCode.ROOM_ALREADY_FULL);
-        }
-
-        BrowserToken browserToken = createUniqueBrowserToken();
-        Participant participant = participantRepository.save(new Participant(
-                room,
-                GUEST_ORDER,
-                browserToken.hash(),
-                ParticipantRole.PARENT
-        ));
+        JoinedParticipant joinedParticipant = joinParticipantWithInviteToken(inviteToken);
+        Room room = joinedParticipant.room();
+        Participant participant = joinedParticipant.participant();
 
         return new JoinRoomResponse(
                 room.getId(),
                 participant.getId(),
                 participant.getRole(),
-                browserToken.value()
+                joinedParticipant.browserToken().value()
+        );
+    }
+
+    @Transactional
+    public VerifyInviteResponse verifyInvite(String inviteToken) {
+        JoinedParticipant joinedParticipant = joinParticipantWithInviteToken(inviteToken);
+        Room room = joinedParticipant.room();
+        Participant participant = joinedParticipant.participant();
+        int joinedParticipantCount = Math.toIntExact(participantRepository.countByRoomId(room.getId()));
+
+        return new VerifyInviteResponse(
+                room.getId(),
+                participant.getId(),
+                participant.getParticipantOrder(),
+                joinedParticipant.browserToken().value(),
+                true,
+                joinedParticipantCount
         );
     }
 
@@ -142,6 +144,35 @@ public class RoomService {
                 return new InviteToken(token, tokenHash);
             }
         }
+    }
+
+    private JoinedParticipant joinParticipantWithInviteToken(String inviteToken) {
+        Room room = findRoomByInviteToken(inviteToken);
+
+        if (participantRepository.countByRoomId(room.getId()) >= ROOM_PARTICIPANT_LIMIT) {
+            throw new CustomException(ErrorCode.ROOM_ALREADY_FULL);
+        }
+
+        BrowserToken browserToken = createUniqueBrowserToken();
+        Participant participant = participantRepository.save(new Participant(
+                room,
+                GUEST_ORDER,
+                browserToken.hash(),
+                ParticipantRole.PARENT
+        ));
+
+        return new JoinedParticipant(room, participant, browserToken);
+    }
+
+    private Room findRoomByInviteToken(String inviteToken) {
+        if (!StringUtils.hasText(inviteToken)) {
+            throw new CustomException(ErrorCode.INVALID_INVITE_TOKEN);
+        }
+
+        String inviteTokenHash = hashToken(inviteToken);
+
+        return roomRepository.findByInviteTokenHash(inviteTokenHash)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INVITE_TOKEN));
     }
 
     private String createInviteToken() {
@@ -216,6 +247,13 @@ public class RoomService {
     private record BrowserToken(
             String value,
             String hash
+    ) {
+    }
+
+    private record JoinedParticipant(
+            Room room,
+            Participant participant,
+            BrowserToken browserToken
     ) {
     }
 }

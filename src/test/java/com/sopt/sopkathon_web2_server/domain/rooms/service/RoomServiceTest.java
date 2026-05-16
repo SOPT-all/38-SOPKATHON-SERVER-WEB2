@@ -6,6 +6,7 @@ import com.sopt.sopkathon_web2_server.domain.participants.repository.Participant
 import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.CreateRoomResponse;
 import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.JoinRoomResponse;
 import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.SwapRoomRolesResponse;
+import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.VerifyInviteResponse;
 import com.sopt.sopkathon_web2_server.domain.rooms.entity.Room;
 import com.sopt.sopkathon_web2_server.domain.rooms.repository.RoomRepository;
 import com.sopt.sopkathon_web2_server.global.exception.CustomException;
@@ -81,6 +82,29 @@ class RoomServiceTest {
     }
 
     @Test
+    void verifyInviteCreatesParentParticipantWithJoinedCount() {
+        CreateRoomResponse createdRoom = roomService.createRoom();
+
+        VerifyInviteResponse response = roomService.verifyInvite(createdRoom.inviteToken());
+
+        assertThat(response.roomId()).isEqualTo(createdRoom.roomId());
+        assertThat(response.participantId()).isNotNull();
+        assertThat(response.participantOrder()).isEqualTo(2);
+        assertThat(response.browserToken()).matches("[0-9a-f]{32}");
+        assertThat(response.isNewParticipant()).isTrue();
+        assertThat(response.joinedParticipantCount()).isEqualTo(2);
+
+        Participant participant = participantRepository.findById(response.participantId()).orElseThrow();
+
+        assertThat(participant.getRoom().getId()).isEqualTo(createdRoom.roomId());
+        assertThat(participant.getParticipantOrder()).isEqualTo(2);
+        assertThat(participant.getRole()).isEqualTo(ParticipantRole.PARENT);
+        assertThat(participant.getBrowserTokenHash())
+                .isNotEqualTo(response.browserToken())
+                .matches("[0-9a-f]{64}");
+    }
+
+    @Test
     void swapRoomRolesKeepsExactlyOneChildAndOneParent() {
         CreateRoomResponse createdRoom = roomService.createRoom();
         JoinRoomResponse joinedRoom = roomService.joinRoom(createdRoom.inviteToken());
@@ -103,6 +127,25 @@ class RoomServiceTest {
         roomService.joinRoom(createdRoom.inviteToken());
 
         assertThatThrownBy(() -> roomService.joinRoom(createdRoom.inviteToken()))
+                .isInstanceOf(CustomException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.ROOM_ALREADY_FULL);
+    }
+
+    @Test
+    void verifyInviteRejectsInvalidInviteToken() {
+        assertThatThrownBy(() -> roomService.verifyInvite("invalid-token"))
+                .isInstanceOf(CustomException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.INVALID_INVITE_TOKEN);
+    }
+
+    @Test
+    void verifyInviteRejectsFullRoom() {
+        CreateRoomResponse createdRoom = roomService.createRoom();
+        roomService.verifyInvite(createdRoom.inviteToken());
+
+        assertThatThrownBy(() -> roomService.verifyInvite(createdRoom.inviteToken()))
                 .isInstanceOf(CustomException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.ROOM_ALREADY_FULL);
