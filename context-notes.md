@@ -83,3 +83,23 @@
 - `RoomService.createRoom`에서 첫 활성 질문을 찾아 `RoomQuestion`으로 저장하도록 구현했다.
 - 질문 카탈로그가 비어 있는 테스트 환경의 기존 방 생성 테스트 흐름은 유지하기 위해 활성 질문이 있을 때만 배정한다.
 - 구현 후 단일 RED 테스트, `./gradlew test --tests com.sopt.sopkathon_web2_server.domain.rooms.service.RoomServiceTest --tests '*Home*'`, `./gradlew test`가 모두 통과했다.
+
+# CustomException 스택트레이스 로그 컨텍스트 노트
+
+- 요청 의도는 운영 서버의 `CustomException` 로그에서 실제 발생 위치를 볼 수 있도록 스택트레이스를 남기는 것이다.
+- 작업은 사용자의 요청대로 최신 `origin/main`을 fast-forward 한 로컬 `main`에서 직접 진행한다.
+- 현재 `Exception` 핸들러는 이미 예외 객체를 로그에 넘기지만, `CustomException` 핸들러는 `e.getMessage()`만 넘겨 스택트레이스를 남기지 않는다.
+- 변경 범위는 `GlobalExceptionHandler.handleCustomException`과 이를 검증하는 테스트로 제한한다.
+- `GlobalExceptionHandlerTest`를 먼저 추가했고, 구현 전 `./gradlew test --tests com.sopt.sopkathon_web2_server.global.exception.GlobalExceptionHandlerTest`는 로그에 `CustomException` 클래스명이 없어 실패했다.
+- `CustomException` 로그 호출에 예외 객체를 마지막 인자로 전달하도록 바꿨고, 같은 테스트 명령이 통과했다.
+- 전체 테스트 `./gradlew test`가 통과했다.
+
+# PR #36 main 병합 해결 컨텍스트 노트
+
+- PR #36은 `develop`에서 `main`으로 병합하는 PR이고, GitHub 커넥터 기준 `mergeable=false`였다.
+- `origin/main`에는 `CustomException` 스택트레이스 로그 변경이 있고 `origin/develop`에는 방 생성 시 질문 배정 변경이 있어 두 브랜치가 diverged 상태였다.
+- `origin/main`을 `develop`에 병합하자 `checklist.md`와 `context-notes.md`에서만 충돌이 발생했다.
+- 충돌 해결 방향은 두 작업 기록을 모두 보존하고 충돌 표식만 제거하는 것이다.
+- 충돌 표식 검색 `rg -n "^<<<<<<<|^=======|^>>>>>>>" .` 결과는 비어 있었다.
+- 병합 해결 후 `./gradlew test`가 통과했다.
+- 병합 해결 커밋을 만들고 원격 `develop`에 푸시한다.

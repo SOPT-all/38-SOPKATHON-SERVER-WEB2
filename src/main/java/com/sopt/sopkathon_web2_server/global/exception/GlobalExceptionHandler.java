@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = {CustomException.class})
     public ApiResponse<?> handleCustomException(CustomException e) {
-        log.error("handleCustomException() in GlobalExceptionHandler throw CustomException : {}", e.getMessage());
+        log.error("handleCustomException() in GlobalExceptionHandler throw CustomException : {}", e.getMessage(), e);
         return ApiResponse.fail(e.getErrorCode());
     }
 

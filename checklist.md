@@ -69,3 +69,23 @@
 - [x] 관련 테스트를 실행한다.
 - [x] 전체 테스트를 실행한다.
 - [x] 변경을 커밋한다.
+
+# CustomException 스택트레이스 로그 체크리스트
+
+- [x] 최신 `main`으로 전환한다.
+- [x] `CustomException` 로그가 스택트레이스를 포함해야 하는 테스트를 추가한다.
+- [x] 구현 전 테스트 실패를 확인한다.
+- [x] `GlobalExceptionHandler`의 `CustomException` 로그에 예외 객체를 전달한다.
+- [x] 관련 테스트를 실행한다.
+- [x] 전체 테스트를 실행한다.
+- [x] 변경을 커밋하고 `main`에 푸시한다.
+
+# PR #36 main 병합 해결 체크리스트
+
+- [x] PR #36의 base와 head 상태를 확인한다.
+- [x] `develop`에 최신 `origin/develop`을 반영한다.
+- [x] `origin/main` 병합 충돌을 재현한다.
+- [x] Markdown 충돌 파일을 양쪽 기록 보존 방식으로 해결한다.
+- [x] 충돌 표식과 diff 상태를 확인한다.
+- [x] 전체 테스트를 실행한다.
+- [x] 병합 해결 커밋을 만들고 원격 `develop`에 푸시한다.
