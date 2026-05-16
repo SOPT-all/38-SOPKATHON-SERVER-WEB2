@@ -11,3 +11,13 @@
 - 중복 선언은 자동 병합 결과로 생긴 것이며 동일 시그니처라 하나만 유지했다.
 - `./gradlew test` 재실행 결과 빌드와 테스트가 통과했다.
 - 병합 커밋 `c1e7229`를 원격 `feat/22`에 푸시했고 GitHub PR #25는 `mergeable=true`로 확인됐다.
+
+# Swagger 어노테이션 추가 컨텍스트 노트
+
+- 요청 의도는 Swagger UI에서 API를 바로 테스트할 수 있도록 공개 API에 설명과 예시 메타데이터를 붙이는 것이다.
+- 현재 springdoc 의존성과 `SwaggerConfig`는 이미 존재하므로 새 문서 라이브러리나 설정 계층을 추가하지 않는다.
+- 공개 컨트롤러 범위는 `RoomController`, `InviteController`, `AnswerController`, `UploadController`, `HomeController`다.
+- 성공 기준은 `/v3/api-docs`에 각 API의 태그, 요약, 요청 본문, Authorization 헤더 설명, DTO 스키마 예시가 노출되고 `./gradlew test`가 통과하는 것이다.
+- `OpenApiDocumentationTest`를 먼저 추가했고 기존 코드에서는 `$.paths['/api/rooms'].post.tags[0]` 검증에서 실패해 Swagger 태그와 요약 메타데이터 부재를 확인했다.
+- 컨트롤러 변경은 springdoc 표준 어노테이션만 사용하고 런타임 요청 처리 로직은 변경하지 않았다.
+- 어노테이션 추가 후 `OpenApiDocumentationTest` 단독 실행과 `./gradlew test` 전체 실행이 통과했다.
