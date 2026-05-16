@@ -38,22 +38,22 @@ public class Answer extends BaseEntity {
     private Participant participant;
 
     // S3 영상 파일 경로
-    @Column(name = "image_key", nullable = false)
-    private String imageKey;
+    @Column(name = "video_key", nullable = false)
+    private String videoKey;
 
     // 생성자
     public Answer(
             RoomQuestion roomQuestion,
             Participant participant,
-            String imageKey
+            String videoKey
     ) {
         this.roomQuestion = roomQuestion;
         this.participant = participant;
-        this.imageKey = imageKey;
+        this.videoKey = videoKey;
     }
 
     // S3 영상 파일 경로 업데이트
-    public void updateImageKey(String imageKey) {
-        this.imageKey = imageKey;
+    public void updateVideoKey(String videoKey) {
+        this.videoKey = videoKey;
     }
 }

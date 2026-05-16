@@ -19,3 +19,10 @@ aws:
 
 client:
   invite-base-url: ${CLIENT_INVITE_BASE_URL:http://localhost:5173}
+
+server:
+  forward-headers-strategy: framework
+
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true

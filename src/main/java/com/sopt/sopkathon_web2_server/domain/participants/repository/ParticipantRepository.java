@@ -10,9 +10,9 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     boolean existsByBrowserTokenHash(String browserTokenHash);
 
-    long countByRoomId(Long roomId);
-
     Optional<Participant> findByBrowserTokenHash(String browserTokenHash);
+
+    long countByRoomId(Long roomId);
 
     Optional<Participant> findByRoomIdAndBrowserTokenHash(Long roomId, String browserTokenHash);
 

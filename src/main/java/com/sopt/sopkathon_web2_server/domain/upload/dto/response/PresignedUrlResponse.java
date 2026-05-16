@@ -2,10 +2,11 @@ package com.sopt.sopkathon_web2_server.domain.upload.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "Presigned URL 발급 응답")
 public record PresignedUrlResponse(
-        @Schema(description = "S3 업로드용 presigned URL", example = "https://bucket.s3.ap-northeast-2.amazonaws.com/uploads/example.png?...signature=...")
+        @Schema(description = "S3에 직접 업로드할 Presigned URL", example = "https://bucket.s3.ap-northeast-2.amazonaws.com/uploads/answer.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256")
         String uploadUrl,
-        @Schema(description = "업로드된 객체 key", example = "uploads/example.png")
+        @Schema(description = "업로드 후 서버에 저장할 파일 키", example = "uploads/answer.mp4")
         String key
 ) {
 }
