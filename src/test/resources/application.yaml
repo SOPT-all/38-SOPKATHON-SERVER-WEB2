@@ -12,3 +12,6 @@ aws:
   region: ap-northeast-2
   s3:
     bucket: test-bucket
+
+client:
+  invite-base-url: http://localhost:5173

@@ -16,3 +16,6 @@ aws:
   region: ap-northeast-2
   s3:
     bucket: ${S3_BUCKET_NAME}
+
+client:
+  invite-base-url: ${CLIENT_INVITE_BASE_URL:http://localhost:5173}
