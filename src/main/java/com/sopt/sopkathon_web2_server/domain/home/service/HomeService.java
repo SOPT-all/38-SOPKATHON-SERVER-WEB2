@@ -5,6 +5,7 @@ import com.sopt.sopkathon_web2_server.domain.home.dto.response.HomeProgressRespo
 import com.sopt.sopkathon_web2_server.domain.home.dto.response.HomeResponse;
 import com.sopt.sopkathon_web2_server.domain.home.dto.response.TodayQuestionResponse;
 import com.sopt.sopkathon_web2_server.domain.participants.entity.Participant;
+import com.sopt.sopkathon_web2_server.domain.participants.entity.ParticipantRole;
 import com.sopt.sopkathon_web2_server.domain.participants.repository.ParticipantRepository;
 import com.sopt.sopkathon_web2_server.domain.question.entity.RoomQuestion;
 import com.sopt.sopkathon_web2_server.domain.question.repository.RoomQuestionRepository;
@@ -24,6 +25,8 @@ import java.util.HexFormat;
 public class HomeService {
 
     private static final String STATUS_MESSAGE = "답장을 받지 못해 멀어지는 중이에요..";
+    private static final String PARENT_ANSWER_PENDING_STATUS_MESSAGE = "부모님 답변은 아직이에요";
+    private static final String PARENT_ANSWER_COMPLETED_STATUS_MESSAGE = "부모님을 답변을 남겼어요";
     private static final int CURRENT_STEP = 1;
     private static final int TOTAL_STEP = 4;
     private static final String STEP_ONE_MESSAGE = "아직은 머뭇거리는 중이에요.";
@@ -54,10 +57,15 @@ public class HomeService {
                 roomQuestion.getId(),
                 participant.getId()
         );
+        boolean parentAnswered = answerRepository.existsByRoomQuestionIdAndParticipantRole(
+                roomQuestion.getId(),
+                ParticipantRole.PARENT
+        );
 
         return new HomeResponse(
                 participant.getRole().name(),
                 STATUS_MESSAGE,
+                getParentAnswerStatusMessage(parentAnswered),
                 createProgressResponse(CURRENT_STEP),
                 new TodayQuestionResponse(
                         roomQuestion.getId(),
@@ -99,5 +107,13 @@ public class HomeService {
             case 4 -> STEP_FOUR_MESSAGE;
             default -> STEP_ONE_MESSAGE;
         };
+    }
+
+    private String getParentAnswerStatusMessage(boolean parentAnswered) {
+        if (parentAnswered) {
+            return PARENT_ANSWER_COMPLETED_STATUS_MESSAGE;
+        }
+
+        return PARENT_ANSWER_PENDING_STATUS_MESSAGE;
     }
 }

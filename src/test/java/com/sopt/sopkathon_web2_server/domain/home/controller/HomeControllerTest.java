@@ -9,6 +9,7 @@ import com.sopt.sopkathon_web2_server.domain.question.entity.RoomQuestion;
 import com.sopt.sopkathon_web2_server.domain.question.repository.QuestionRepository;
 import com.sopt.sopkathon_web2_server.domain.question.repository.RoomQuestionRepository;
 import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.CreateRoomResponse;
+import com.sopt.sopkathon_web2_server.domain.rooms.dto.response.JoinRoomResponse;
 import com.sopt.sopkathon_web2_server.domain.rooms.entity.Room;
 import com.sopt.sopkathon_web2_server.domain.rooms.service.RoomService;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,7 @@ class HomeControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.selectedMode").value("CHILD"))
                 .andExpect(jsonPath("$.data.statusMessage").value("답장을 받지 못해 멀어지는 중이에요.."))
+                .andExpect(jsonPath("$.data.parentAnswerStatusMessage").value("부모님 답변은 아직이에요"))
                 .andExpect(jsonPath("$.data.progress.currentStep").value(1))
                 .andExpect(jsonPath("$.data.progress.totalStep").value(4))
                 .andExpect(jsonPath("$.data.progress.message").value("아직은 머뭇거리는 중이에요."))
@@ -87,6 +89,24 @@ class HomeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.todayQuestion.answered").value(true));
+    }
+
+    @Test
+    void getHomeReturnsParentAnsweredStatusMessageWhenParentAnswerExists() throws Exception {
+        CreateRoomResponse createdRoom = roomService.createRoom();
+        JoinRoomResponse joinedRoom = roomService.joinRoom(createdRoom.inviteToken());
+        Participant child = participantRepository.findById(createdRoom.participantId()).orElseThrow();
+        Participant parent = participantRepository.findById(joinedRoom.participantId()).orElseThrow();
+        RoomQuestion roomQuestion = saveRoomQuestion(child.getRoom(), "부모님과 가장 가고 싶은 곳은 어디인가요?");
+        answerRepository.save(new Answer(roomQuestion, parent, "answers/parent-answer.mp4"));
+
+        mockMvc.perform(get("/api/home")
+                        .header("Authorization", "Bearer " + createdRoom.browserToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.statusMessage").value("답장을 받지 못해 멀어지는 중이에요.."))
+                .andExpect(jsonPath("$.data.parentAnswerStatusMessage").value("부모님을 답변을 남겼어요"))
+                .andExpect(jsonPath("$.data.progress.message").value("아직은 머뭇거리는 중이에요."));
     }
 
     private RoomQuestion saveRoomQuestion(Room room, String content) {
