@@ -10,3 +10,4 @@
 - 첫 테스트 실행은 `ParticipantRepository`에 같은 `findByBrowserTokenHash` 선언이 두 번 남아 컴파일 단계에서 실패했다.
 - 중복 선언은 자동 병합 결과로 생긴 것이며 동일 시그니처라 하나만 유지했다.
 - `./gradlew test` 재실행 결과 빌드와 테스트가 통과했다.
+- 병합 커밋 `c1e7229`를 원격 `feat/22`에 푸시했고 GitHub PR #25는 `mergeable=true`로 확인됐다.
