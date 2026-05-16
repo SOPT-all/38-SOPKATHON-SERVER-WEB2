@@ -8,4 +8,6 @@ out/
 .DS_Store
 *.log
 
+src/main/resources/application-local.yaml
+
 !gradle/wrapper/gradle-wrapper.jar
