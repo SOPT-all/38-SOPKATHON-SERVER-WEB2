@@ -72,6 +72,18 @@
 - 수정 후 `./gradlew test --tests '*Home*'`가 통과했다.
 - 전체 테스트 `./gradlew test`가 통과했다.
 
+# 방 생성 시 질문 배정 컨텍스트 노트
+
+- 요청 의도는 운영에서 홈 화면 조회가 500으로 실패하지 않도록 방 생성 시점에 해당 방의 첫 질문을 배정하는 것이다.
+- 작업은 `develop` 기준 `codex/assign-question-on-room-create` 브랜치에서 진행한다.
+- 작업 계획은 방 생성 직후 `RoomQuestion`이 생성되는 테스트를 먼저 추가하고, `RoomService.createRoom`에서 첫 활성 질문을 조회해 `RoomQuestion`을 저장한 뒤 홈 조회까지 관련 테스트로 검증하는 것이다.
+- 성공 기준은 수동으로 `room_questions` 데이터를 넣지 않아도 `createRoom()` 직후 `homeService.getHome(browserToken)`이 오늘 질문을 반환하고 관련 테스트와 전체 테스트가 통과하는 것이다.
+- 운영 로그 기준 원인은 `HomeService.getHome`이 참여자 방의 최신 `RoomQuestion`을 찾지 못해 `INTERNAL_SERVER_ERROR`를 던진 것이다.
+- `RoomServiceTest.createRoomAssignsFirstActiveQuestionToRoom`을 추가했고 구현 전 `./gradlew test --tests com.sopt.sopkathon_web2_server.domain.rooms.service.RoomServiceTest.createRoomAssignsFirstActiveQuestionToRoom`는 `RoomQuestion` 조회 결과가 없어 `NoSuchElementException`으로 실패했다.
+- `RoomService.createRoom`에서 첫 활성 질문을 찾아 `RoomQuestion`으로 저장하도록 구현했다.
+- 질문 카탈로그가 비어 있는 테스트 환경의 기존 방 생성 테스트 흐름은 유지하기 위해 활성 질문이 있을 때만 배정한다.
+- 구현 후 단일 RED 테스트, `./gradlew test --tests com.sopt.sopkathon_web2_server.domain.rooms.service.RoomServiceTest --tests '*Home*'`, `./gradlew test`가 모두 통과했다.
+
 # CustomException 스택트레이스 로그 컨텍스트 노트
 
 - 요청 의도는 운영 서버의 `CustomException` 로그에서 실제 발생 위치를 볼 수 있도록 스택트레이스를 남기는 것이다.
@@ -81,3 +93,13 @@
 - `GlobalExceptionHandlerTest`를 먼저 추가했고, 구현 전 `./gradlew test --tests com.sopt.sopkathon_web2_server.global.exception.GlobalExceptionHandlerTest`는 로그에 `CustomException` 클래스명이 없어 실패했다.
 - `CustomException` 로그 호출에 예외 객체를 마지막 인자로 전달하도록 바꿨고, 같은 테스트 명령이 통과했다.
 - 전체 테스트 `./gradlew test`가 통과했다.
+
+# PR #36 main 병합 해결 컨텍스트 노트
+
+- PR #36은 `develop`에서 `main`으로 병합하는 PR이고, GitHub 커넥터 기준 `mergeable=false`였다.
+- `origin/main`에는 `CustomException` 스택트레이스 로그 변경이 있고 `origin/develop`에는 방 생성 시 질문 배정 변경이 있어 두 브랜치가 diverged 상태였다.
+- `origin/main`을 `develop`에 병합하자 `checklist.md`와 `context-notes.md`에서만 충돌이 발생했다.
+- 충돌 해결 방향은 두 작업 기록을 모두 보존하고 충돌 표식만 제거하는 것이다.
+- 충돌 표식 검색 `rg -n "^<<<<<<<|^=======|^>>>>>>>" .` 결과는 비어 있었다.
+- 병합 해결 후 `./gradlew test`가 통과했다.
+- 병합 해결 커밋을 만들고 원격 `develop`에 푸시한다.
