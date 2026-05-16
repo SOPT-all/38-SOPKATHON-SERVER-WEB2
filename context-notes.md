@@ -35,3 +35,16 @@
 - 충돌 표식 검색 `rg -n '<<<<<<<|=======|>>>>>>>' .` 결과는 비어 있었다.
 - `./gradlew test --tests '*Records*'`와 `./gradlew test`가 모두 통과했다.
 - 병합 해결 커밋 `1a32270`을 원격 `feat/24`에 푸시했다.
+
+# 기록 상세 조회 API 컨텍스트 노트
+
+- 요청 의도는 질문-답변 기록 목록에서 선택한 완료 기록의 질문 정보와 부모님/나의 답변 영상을 조회하는 API를 추가하는 것이다.
+- 작업은 최신 `origin/develop`을 fast-forward 한 뒤 `codex/record-detail-api` 브랜치에서 진행한다.
+- 기존 목록 API가 `/api/records`를 사용하므로 상세 API는 같은 컨트롤러에 `GET /api/records/{roomQuestionId}`로 추가한다.
+- 브라우저 토큰 처리와 참여자 식별은 기존 `RecordsService.getRecords` 흐름을 재사용하고, 같은 방에 속하지 않거나 양쪽 답변이 완료되지 않은 질문은 기록으로 보지 않는다.
+- 새 에러 코드는 명세의 `40402`와 메시지 `기록을 찾을 수 없습니다`를 그대로 사용한다.
+- `Answer`에는 S3 객체 키만 저장되어 있으므로 응답의 `videoUrl`은 `aws.s3.bucket`과 `aws.region` 설정으로 공개 S3 URL을 조립한다.
+- 상세 조회 컨트롤러 테스트 3개를 먼저 추가했고, 구현 전 `./gradlew test --tests com.sopt.sopkathon_web2_server.domain.records.controller.RecordsControllerTest`에서 상세 조회 케이스 3개가 실패했다.
+- 상세 조회 구현 후 같은 컨트롤러 테스트 명령이 통과했다.
+- 기록 도메인 관련 테스트 `./gradlew test --tests '*Records*'`가 통과했다.
+- 전체 테스트 `./gradlew test`가 통과했다.
