@@ -1,5 +1,6 @@
 package com.sopt.sopkathon_web2_server.domain.records.controller;
 
+import com.sopt.sopkathon_web2_server.domain.records.dto.response.RecordDetailResponse;
 import com.sopt.sopkathon_web2_server.domain.records.dto.response.RecordsResponse;
 import com.sopt.sopkathon_web2_server.domain.records.service.RecordsService;
 import com.sopt.sopkathon_web2_server.global.exception.CustomException;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -81,6 +83,72 @@ public class RecordsController {
             @RequestHeader(value = "Authorization", required = false) String authorization
     ) {
         return ApiResponse.ok(recordsService.getRecords(extractBearerToken(authorization)));
+    }
+
+    @GetMapping("/{roomQuestionId}")
+    @Operation(summary = "기록 상세 조회", description = "선택한 완료 기록의 질문 정보와 부모님/나의 답변 영상을 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "기록 상세 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "success": true,
+                                      "data": {
+                                        "roomQuestionId": 1,
+                                        "question": "어릴 때 꿈이 뭐였어?",
+                                        "completedAt": "2026-05-17T20:24:00",
+                                        "answers": [
+                                          {
+                                            "role": "PARENT",
+                                            "videoUrl": "https://bucket.s3.ap-northeast-2.amazonaws.com/uploads/parent-answer.mp4",
+                                            "answeredAt": "2026-05-17T20:24:00",
+                                            "isMine": false
+                                          },
+                                          {
+                                            "role": "CHILD",
+                                            "videoUrl": "https://bucket.s3.ap-northeast-2.amazonaws.com/uploads/child-answer.mp4",
+                                            "answeredAt": "2026-05-17T20:30:00",
+                                            "isMine": true
+                                          }
+                                        ]
+                                      },
+                                      "error": null
+                                    }
+                                    """)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "기록을 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "success": false,
+                                      "data": null,
+                                      "error": {
+                                        "code": 40402,
+                                        "message": "기록을 찾을 수 없습니다"
+                                      }
+                                    }
+                                    """)
+                    )
+            )
+    })
+    public ApiResponse<RecordDetailResponse> getRecordDetail(
+            @Parameter(description = "조회할 질문-답변 기록 ID", example = "1")
+            @PathVariable Long roomQuestionId,
+            @Parameter(
+                    description = "Bearer {browserToken} 형식의 인증 헤더",
+                    example = "Bearer b31390e4e3fe36fddbd05033b3068e01"
+            )
+            @RequestHeader(value = "Authorization", required = false) String authorization
+    ) {
+        return ApiResponse.ok(recordsService.getRecordDetail(roomQuestionId, extractBearerToken(authorization)));
     }
 
     private String extractBearerToken(String authorization) {
