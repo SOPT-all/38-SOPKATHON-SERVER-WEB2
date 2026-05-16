@@ -7,5 +7,7 @@ import java.util.Optional;
 
 public interface RoomQuestionRepository extends JpaRepository<RoomQuestion, Long> {
 
+    Optional<RoomQuestion> findByIdAndRoomId(Long id, Long roomId);
+
     Optional<RoomQuestion> findFirstByRoomIdOrderByOpenedAtDesc(Long roomId);
 }

@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface AnswerRepository extends JpaRepository<Answer, Long> {
 
     boolean existsByRoomQuestionIdAndParticipantId(Long roomQuestionId, Long participantId);
+
+    long countByRoomQuestionId(Long roomQuestionId);
 }
