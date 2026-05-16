@@ -71,3 +71,13 @@
 - `HomeResponse`에 `parentAnswerStatusMessage`를 추가하고 `HomeService`에서 기존 `statusMessage`와 분리해 내려주도록 수정했다.
 - 수정 후 `./gradlew test --tests '*Home*'`가 통과했다.
 - 전체 테스트 `./gradlew test`가 통과했다.
+
+# CustomException 스택트레이스 로그 컨텍스트 노트
+
+- 요청 의도는 운영 서버의 `CustomException` 로그에서 실제 발생 위치를 볼 수 있도록 스택트레이스를 남기는 것이다.
+- 작업은 사용자의 요청대로 최신 `origin/main`을 fast-forward 한 로컬 `main`에서 직접 진행한다.
+- 현재 `Exception` 핸들러는 이미 예외 객체를 로그에 넘기지만, `CustomException` 핸들러는 `e.getMessage()`만 넘겨 스택트레이스를 남기지 않는다.
+- 변경 범위는 `GlobalExceptionHandler.handleCustomException`과 이를 검증하는 테스트로 제한한다.
+- `GlobalExceptionHandlerTest`를 먼저 추가했고, 구현 전 `./gradlew test --tests com.sopt.sopkathon_web2_server.global.exception.GlobalExceptionHandlerTest`는 로그에 `CustomException` 클래스명이 없어 실패했다.
+- `CustomException` 로그 호출에 예외 객체를 마지막 인자로 전달하도록 바꿨고, 같은 테스트 명령이 통과했다.
+- 전체 테스트 `./gradlew test`가 통과했다.
