@@ -21,3 +21,17 @@
 - `OpenApiDocumentationTest`를 먼저 추가했고 기존 코드에서는 `$.paths['/api/rooms'].post.tags[0]` 검증에서 실패해 Swagger 태그와 요약 메타데이터 부재를 확인했다.
 - 컨트롤러 변경은 springdoc 표준 어노테이션만 사용하고 런타임 요청 처리 로직은 변경하지 않았다.
 - 어노테이션 추가 후 `OpenApiDocumentationTest` 단독 실행과 `./gradlew test` 전체 실행이 통과했다.
+
+# PR #28 main 병합 해결 컨텍스트 노트
+
+- PR #28은 `feat/24`의 질문-답변 목록 조회 PR이다.
+- GitHub 커넥터 기준 PR base는 `develop`이지만, 로컬 확인 결과 `origin/develop`은 `origin/main`의 조상이고 `origin/main`에 `b1cf26a chore: 스웨거 https 적용`이 추가로 있다.
+- 사용자의 기준 정정에 따라 잘못 시작한 `origin/develop` 병합은 중단했고, 최신 기준을 `origin/main`으로 바꿨다.
+- `origin/main` 병합에서도 충돌은 동일하게 재현됐다.
+- `AnswerRepository` 충돌은 답변 저장 API의 `existsByRoomQuestionIdAndParticipantId`와 목록 조회 API의 `countByRoomQuestionId`를 모두 유지하는 방식으로 해결했다.
+- `RoomQuestionRepository` 충돌은 답변 저장 API의 `findByIdAndRoomId`, 홈 API의 `findFirstByRoomIdOrderByOpenedAtDesc`, 목록 조회 API의 `findAllByRoomIdAndCompletedAtIsNotNullOrderByCompletedAtDesc`를 모두 유지하는 방식으로 해결했다.
+- `RoomController`, `InviteController`, `UploadController`와 관련 DTO의 Swagger 중복 충돌은 최신 main의 태그와 요약을 유지했다.
+- 자동 병합으로 `ParticipantRepository.findByBrowserTokenHash`가 중복 선언되어 하나만 유지했다.
+- 충돌 표식 검색 `rg -n '<<<<<<<|=======|>>>>>>>' .` 결과는 비어 있었다.
+- `./gradlew test --tests '*Records*'`와 `./gradlew test`가 모두 통과했다.
+- 병합 해결 커밋 `1a32270`을 원격 `feat/24`에 푸시했다.
