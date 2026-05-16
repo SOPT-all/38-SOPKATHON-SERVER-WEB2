@@ -71,3 +71,15 @@
 - `HomeResponse`에 `parentAnswerStatusMessage`를 추가하고 `HomeService`에서 기존 `statusMessage`와 분리해 내려주도록 수정했다.
 - 수정 후 `./gradlew test --tests '*Home*'`가 통과했다.
 - 전체 테스트 `./gradlew test`가 통과했다.
+
+# 방 생성 시 질문 배정 컨텍스트 노트
+
+- 요청 의도는 운영에서 홈 화면 조회가 500으로 실패하지 않도록 방 생성 시점에 해당 방의 첫 질문을 배정하는 것이다.
+- 작업은 `develop` 기준 `codex/assign-question-on-room-create` 브랜치에서 진행한다.
+- 작업 계획은 방 생성 직후 `RoomQuestion`이 생성되는 테스트를 먼저 추가하고, `RoomService.createRoom`에서 첫 활성 질문을 조회해 `RoomQuestion`을 저장한 뒤 홈 조회까지 관련 테스트로 검증하는 것이다.
+- 성공 기준은 수동으로 `room_questions` 데이터를 넣지 않아도 `createRoom()` 직후 `homeService.getHome(browserToken)`이 오늘 질문을 반환하고 관련 테스트와 전체 테스트가 통과하는 것이다.
+- 운영 로그 기준 원인은 `HomeService.getHome`이 참여자 방의 최신 `RoomQuestion`을 찾지 못해 `INTERNAL_SERVER_ERROR`를 던진 것이다.
+- `RoomServiceTest.createRoomAssignsFirstActiveQuestionToRoom`을 추가했고 구현 전 `./gradlew test --tests com.sopt.sopkathon_web2_server.domain.rooms.service.RoomServiceTest.createRoomAssignsFirstActiveQuestionToRoom`는 `RoomQuestion` 조회 결과가 없어 `NoSuchElementException`으로 실패했다.
+- `RoomService.createRoom`에서 첫 활성 질문을 찾아 `RoomQuestion`으로 저장하도록 구현했다.
+- 질문 카탈로그가 비어 있는 테스트 환경의 기존 방 생성 테스트 흐름은 유지하기 위해 활성 질문이 있을 때만 배정한다.
+- 구현 후 단일 RED 테스트, `./gradlew test --tests com.sopt.sopkathon_web2_server.domain.rooms.service.RoomServiceTest --tests '*Home*'`, `./gradlew test`가 모두 통과했다.
