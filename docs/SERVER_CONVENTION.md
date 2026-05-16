@@ -14,11 +14,72 @@
 **커밋 메시지만 읽어도 어떤 내용이 변경되었는지 알 수 있도록 직관적이고 명확하게 작성하기!**
 
 ```json
-{이슈 번호} {컨벤션}: 한글 커밋 메시지
+(이슈 번호) (컨벤션) : 한글 커밋 메시지
 - (예) 21 refactor: 즐겨찾기 실패 시 응답 구조를 공통 응답 객체로 변경
 ```
 
-![스크린샷 2026-05-08 오후 11.53.20.png](attachment:aa78dd6e-e4d6-4b50-ac65-77b1af898361:스크린샷_2026-05-08_오후_11.53.20.png)
+
+`feat` 새로운 기능 추가 \
+`refactor` 기능 흐름 및 동작에는 변경이 없으나 구조 등을 개선 \
+`fix` 개발 과정에서 생긴 오류를 수정한 경우 \
+`HOTFIX!` 배포된 이후 발생한 오류를 수정한 경우 \
+`test` 테스트 코드 추가, 테스트 코드 리팩토링 \
+`docs` 문서를 추가, 수정한 경우 \
+`chore` 프로젝트 설정과 관련된 경우
+
 
 ---
 
+## Service Architecture
+
+```json
+com
+└── sopt
+    └── sopkathon
+        ├── domain
+        │   ├── domain1
+        │   │   ├── controller
+        │   │   ├── service
+        │   │   ├── entity
+        │   │   ├── dto
+        │   │   │   ├── request
+        │   │   │   └── response
+        │   │   └── repository
+        │   └── ...
+        │
+        └── global
+            ├── config
+            ├── exception
+            │   ├── ErrorCode
+            │   ├── BusinessException
+            │   └── GlobalExceptionHandler
+            └── response
+                ├── ApiResponse
+                ├── ErrorResponse
+                └── ErrorDetail
+```
+
+## ApiResponse
+
+- 성공 응답
+
+```
+{
+    "success": true,
+    "data": {}, // or [] or null
+    "error": null
+}
+```
+
+- 실패 응답
+  -  실패 응답에서의 code는 http 상태 코드가 아닌 custom code ex)40001,40002
+```
+{
+    "success": false,
+    "data": null,
+    "error": {
+    "code": int,
+    "message": string
+        }
+}
+```
