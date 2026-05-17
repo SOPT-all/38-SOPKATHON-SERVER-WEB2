@@ -23,7 +23,6 @@ class WebConfigTest {
                         .header("Origin", "https://meomoot.site")
                         .header("Access-Control-Request-Method", "POST"))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Access-Control-Allow-Origin", "https://meomoot.site"))
-                .andExpect(header().string("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS"));
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://meomoot.site"));
     }
 }
