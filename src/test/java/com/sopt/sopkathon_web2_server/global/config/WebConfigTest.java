@@ -20,7 +20,7 @@ class WebConfigTest {
     @Test
     void corsPreflightAllowsLocalViteFrontend() throws Exception {
         mockMvc.perform(options("/api/uploads/presigned-url")
-                        .header("Origin", "http://localhost:5173")
+                        .header("Origin", "https://meomoot.site")
                         .header("Access-Control-Request-Method", "POST"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Access-Control-Allow-Origin", "https://meomoot.site"))
